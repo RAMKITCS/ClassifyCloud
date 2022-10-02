@@ -55,4 +55,4 @@ def Predict(path):
     except Exception as e:
         print(str(e))
         return str(e)
-print(Predict("Contract/A-2022-0921.Residential-Lease-Agreement-f5/A-2022-0921.Residential-Lease-Agreement-f5.pdf__0.jpg_ocr.txt"))
+#print(Predict("Contract/A-2022-0921.Residential-Lease-Agreement-f5/A-2022-0921.Residential-Lease-Agreement-f5.pdf__0.jpg_ocr.txt"))
