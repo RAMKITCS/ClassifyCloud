@@ -34,7 +34,7 @@ def vectorize(data,tfidf_vect_fit):
     x_tfidf_df=pd.DataFrame(x_tfidf.todense(),columns=tfidf_vect_fit.get_feature_names())
     return x_tfidf_df
 import joblib
-def Predict(path):
+def Predict(path,doc_type):
     try:
         from gcsconnect import read_file,download_to_local,write_file
         update_status=read_file("Classification/Models/status.txt").decode()
@@ -51,7 +51,8 @@ def Predict(path):
         ocr_data=read_file(path).decode()
         df2=pd.DataFrame({"data":[ocr_data]},dtype=str)
         pred_value=model.predict(vectorize(df2["data"].values.astype('U'),tfidf_vect_fit))
-        return pred_value[0]
+        print("predicted label",pred_value[0])
+        doc_type["predicted_type"]=pred_value[0]
     except Exception as e:
         print(str(e))
         return str(e)

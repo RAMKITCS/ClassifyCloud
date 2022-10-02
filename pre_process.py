@@ -33,16 +33,20 @@ def preprocess(path):
         p2.join()
         gcsconnect.write_file(path.rstrip('.pdf')+"/main_ocr.txt",main_ocr.copy()["ocr"])
         gcsconnect.write_file(path.rstrip('.pdf')+"/rubber.json",json.dumps(rubber_main.copy()))
+        del rubber_main,main_ocr
         print("ocr generation done")
         print("Classification started")
         import classification_test
-        p3=Process(target=classification_test.Predict,args={path.rstrip('.pdf')+"/main_ocr.txt"})
+        doc_type=multiprocessing.Manager().dict()
+        p3=Process(target=classification_test.Predict,args={path.rstrip('.pdf')+"/main_ocr.txt",doc_type})
         p3.start()
         p3.join()
         print("Classification finished")
         #print(gcsconnect.ocr_maker(pageinfo))
+        mongoDB.update(result['_id'],'Ready',doc_type.copy()["predicted_type"])
         print("pre process time",time.time()-st)
-        #mongoDB.update(id,'Validation1','Ready')
+        #mongoDB.update(id,'Validation1','Ready',doc_type.copy()["predicted_type"])
+        del doc_type
         print('updated')
     else:
         print("all done")

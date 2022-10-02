@@ -41,4 +41,4 @@ def hello_gcs(cloud_event):
 # if __name__=="__main__":
 #     import mongoDB
 #     #print((mongoDB.Connection().find_one({"name":"test1.Residential-Lease-Agreement-f5.pdf"})))
-#     call_pre("Classification_Input/test1.Residential-Lease-Agreement-f5.pdf")
+#     call_pre("Classification_Input/input2.class_input.pdf")
