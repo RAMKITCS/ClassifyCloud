@@ -5,7 +5,7 @@ SOURCE_DIR="${DIR}"
 
 gcloud functions deploy classification-trigger \
 --gen2 \
---runtime=python38 \
+--runtime=python37 \
 --region=us-central1 \
 --source=${SOURCE_DIR} \
 --entry-point=hello_gcs \
