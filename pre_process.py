@@ -38,12 +38,12 @@ def preprocess(path):
         print("Classification started")
         import classification_test
         doc_type=multiprocessing.Manager().dict()
-        p3=Process(target=classification_test.Predict,args={path.rstrip('.pdf')+"/main_ocr.txt",doc_type})
+        p3=Process(target=classification_test.Predict,args={(path.rstrip('.pdf')+"/main_ocr.txt",doc_type)})
         p3.start()
         p3.join()
         print("Classification finished")
         #print(gcsconnect.ocr_maker(pageinfo))
-        mongoDB.update(result['_id'],'Ready',doc_type.copy()["predicted_type"])
+        mongoDB.update(result['_id'],'Ready',str(doc_type.copy().get("predicted_type")))
         print("pre process time",time.time()-st)
         #mongoDB.update(id,'Validation1','Ready',doc_type.copy()["predicted_type"])
         del doc_type

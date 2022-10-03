@@ -34,10 +34,13 @@ def vectorize(data,tfidf_vect_fit):
     x_tfidf_df=pd.DataFrame(x_tfidf.todense(),columns=tfidf_vect_fit.get_feature_names())
     return x_tfidf_df
 import joblib
-def Predict(path,doc_type):
+def Predict(data):
+    path=data[0]
+    doc_type=data[1]
     try:
         from gcsconnect import read_file,download_to_local,write_file
         update_status=read_file("Classification/Models/status.txt").decode()
+        print("status",update_status)
         if update_status=='1':
             write_file("Classification/Models/status.txt","0")
         if "model.pkl" not in os.listdir("models/") or update_status=='1':
@@ -50,10 +53,11 @@ def Predict(path,doc_type):
         tfidf_vect_fit=joblib.load("models/tfidf.pkl")
         ocr_data=read_file(path).decode()
         df2=pd.DataFrame({"data":[ocr_data]},dtype=str)
+        print("before predicted label")
         pred_value=model.predict(vectorize(df2["data"].values.astype('U'),tfidf_vect_fit))
         print("predicted label",pred_value[0])
-        doc_type["predicted_type"]=pred_value[0]
+        doc_type["predicted_type"]=str(pred_value[0])
     except Exception as e:
-        print(str(e))
-        return str(e)
+        print("classification error",str(e))
+        #return str(e)
 #print(Predict("Contract/A-2022-0921.Residential-Lease-Agreement-f5/A-2022-0921.Residential-Lease-Agreement-f5.pdf__0.jpg_ocr.txt"))
