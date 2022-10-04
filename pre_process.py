@@ -8,7 +8,7 @@ def preprocess(path):
     #result=mongoDB.updateReturn({'queue':'Scan'},{'queue':'In Progress'})
     filename=path.split("/")[-1]
     path=path.replace("Classification_Input","Classification")
-    result=mongoDB.updateReturn({'name':filename},{'queue':'In Progress'})
+    result=mongoDB.updateReturn({'name':filename,'queue':'Scan'},{'queue':'In Progress'})
     print(result)
     if result:
         #path='Contract/'+result['name']
