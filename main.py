@@ -11,16 +11,20 @@ def call_pre(path):
     filename=path.split("/")[-1]
     result=mongoDB.Connection().find_one({'name':filename,'queue':'Scan'})
     print(result)
-    p1=Process(target=pre_process.preprocess,args={path,})
-    p1.start()
-    p1.join(520)
-    if p1.is_alive():
-        print("Thread Alive")
-        p1.terminate()
-        print("Terminated the thread")
-        from datetime import datetime
+    try:
+        p1=Process(target=pre_process.preprocess,args={path,})
+        p1.start()
+        p1.join(520)
+        if p1.is_alive():
+            print("Thread Alive")
+            p1.terminate()
+            print("Terminated the thread")
+            from datetime import datetime
+            mongoDB.Connection().update_one({'_id':result['_id']},{"$set":{'queue':"Exception","completed_date":datetime.now().strftime(("%d/%m/%Y %H:%M:%S"))}})
+        print("completed")
+    except Exception as e:
+        print("Application Error",str(e))
         mongoDB.Connection().update_one({'_id':result['_id']},{"$set":{'queue':"Exception","completed_date":datetime.now().strftime(("%d/%m/%Y %H:%M:%S"))}})
-    print("completed")
 
 @functions_framework.cloud_event
 def hello_gcs(cloud_event):
@@ -44,7 +48,7 @@ def hello_gcs(cloud_event):
     print(f"Updated: {updated}")
     call_pre(name)
     print("Event Completed",name)
-if __name__=="__main__":
-    #import mongoDB
-    #print((mongoDB.Connection().find_one({"name":"test1.Residential-Lease-Agreement-f5.pdf"})))
-    call_pre("Classification_Input/input2.class_input.pdf")
+# if __name__=="__main__":
+#     #import mongoDB
+#     #print((mongoDB.Connection().find_one({"name":"test1.Residential-Lease-Agreement-f5.pdf"})))
+#     call_pre("Classification_Input/input2.class_input.pdf")
