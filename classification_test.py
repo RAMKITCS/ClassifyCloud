@@ -54,9 +54,12 @@ def Predict(data):
         ocr_data=read_file(path).decode()
         df2=pd.DataFrame({"data":[ocr_data]},dtype=str)
         print("before predicted label")
-        pred_value=model.predict(vectorize(df2["data"].values.astype('U'),tfidf_vect_fit))
+        df_vect=vectorize(df2["data"].values.astype('U'),tfidf_vect_fit)
+        pred_value=model.predict(df_vect)
         print("predicted label",pred_value[0])
         doc_type["predicted_type"]=str(pred_value[0])
+        doc_type["predicted_score"]=str(model.predict_proba(df_vect).max())
+        del pred_value,df_vect
     except Exception as e:
         print("classification error",str(e))
         #return str(e)

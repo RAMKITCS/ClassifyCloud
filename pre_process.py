@@ -50,7 +50,8 @@ def preprocess(path):
         p3.join()
         print("Classification finished")
         #print(gcsconnect.ocr_maker(pageinfo))
-        mongoDB.update(result['_id'],'Ready',str(doc_type.copy().get("predicted_type")))
+        doc_type=doc_type.copy()
+        mongoDB.update(result['_id'],'Ready',str(doc_type.get("predicted_type")),str(doc_type.get("predicted_score")))
         print("pre process time",time.time()-st)
         #mongoDB.update(id,'Validation1','Ready',doc_type.copy()["predicted_type"])
         del doc_type
