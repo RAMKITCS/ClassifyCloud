@@ -64,7 +64,7 @@ def findall_json(date=None):
         return json.dumps(list(Connection().find({'upload_date':{'$regex':date}})),default=my_handler)
     return json.dumps(list(Connection().find()),default=my_handler)
 def update(id,que,doc_type):
-    return Connection().update_one({'_id':id},{"$set":{'queue':que,'doc_type':doc_type}})
+    return Connection().update_one({'_id':id},{"$set":{'queue':que,'doc_type':doc_type,"completed_date":datetime.now().strftime(("%d/%m/%Y %H:%M:%S"))}})
 def delete(query):
     return Connection().delete_many(query)
 

@@ -6,14 +6,20 @@ try:
     print("main1",__name__,__file__)
 except Exception as e:
     print("nltk error",str(e))
-def call_pre(filename):
-    p1=Process(target=pre_process.preprocess,args={filename,})
+def call_pre(path):
+    import mongoDB
+    filename=path.split("/")[-1]
+    result=mongoDB.Connection().find_one({'name':filename,'queue':'Scan'})
+    print(result)
+    p1=Process(target=pre_process.preprocess,args={path,})
     p1.start()
-    p1.join(3000)
+    p1.join(520)
     if p1.is_alive():
         print("Thread Alive")
         p1.terminate()
         print("Terminated the thread")
+        from datetime import datetime
+        mongoDB.Connection().update_one({'_id':result['_id']},{"$set":{'queue':"Exception","completed_date":datetime.now().strftime(("%d/%m/%Y %H:%M:%S"))}})
     print("completed")
 
 @functions_framework.cloud_event

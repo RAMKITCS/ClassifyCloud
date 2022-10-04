@@ -25,12 +25,19 @@ def preprocess(path):
         #pageinfo=convert_pdf_to_image_split('Contract/Residential-Lease-Agreement-4/','Contract/Residential-Lease-Agreement-4.pdf')
         import time
         st=time.time()
+        split_flag,ocr_flag,class_flag=False,False,False
         p=Process(target=gcsconnect.convert_pdf_to_image_split,args={(path.rstrip('.pdf')+'/',path,parent),})
         p.start()
-        p.join()
+        p.join(100)
+        if p.is_alive():
+            p.terminate()
+            print("Terminated Spliter process")
         print("spliting done")
         #print(pageinfo)
-        p2.join()
+        p2.join(450)
+        if p2.is_alive():
+            p2.terminate()
+            print("Terminated OCR process")
         gcsconnect.write_file(path.rstrip('.pdf')+"/main_ocr.txt",main_ocr.copy()["ocr"])
         gcsconnect.write_file(path.rstrip('.pdf')+"/rubber.json",json.dumps(rubber_main.copy()))
         del rubber_main,main_ocr
@@ -64,3 +71,4 @@ def worker_pre(receiver):
         print("received msg : ",msg,os.getpid())
         p2=Process(target=gcsconnect.ocr_maker_1,args={(msg,rubber_main,main_ocr),})
         p2.start()
+        p2.join()
