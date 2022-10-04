@@ -8,7 +8,7 @@ def preprocess(path):
     #result=mongoDB.updateReturn({'queue':'Scan'},{'queue':'In Progress'})
     filename=path.split("/")[-1]
     path=path.replace("Classification_Input","Classification")
-    result=mongoDB.updateReturn({'name':filename,'queue':'Scan'},{'queue':'In Progress'})
+    result=mongoDB.updateReturn({'name':filename},{'queue':'In Progress'})
     print(result)
     if result:
         #path='Contract/'+result['name']
@@ -28,16 +28,9 @@ def preprocess(path):
         split_flag,ocr_flag,class_flag=False,False,False
         p=Process(target=gcsconnect.convert_pdf_to_image_split,args={(path.rstrip('.pdf')+'/',path,parent),})
         p.start()
-        p.join(100)
-        if p.is_alive():
-            p.terminate()
-            print("Terminated Spliter process")
-        print("spliting done")
+        p.join()
         #print(pageinfo)
-        p2.join(450)
-        if p2.is_alive():
-            p2.terminate()
-            print("Terminated OCR process")
+        p2.join()
         gcsconnect.write_file(path.rstrip('.pdf')+"/main_ocr.txt",main_ocr.copy()["ocr"])
         gcsconnect.write_file(path.rstrip('.pdf')+"/rubber.json",json.dumps(rubber_main.copy()))
         del rubber_main,main_ocr
@@ -51,7 +44,7 @@ def preprocess(path):
         print("Classification finished")
         #print(gcsconnect.ocr_maker(pageinfo))
         doc_type=doc_type.copy()
-        mongoDB.update(result['_id'],'Ready',str(doc_type.get("predicted_type")),str(doc_type.get("predicted_score")))
+        mongoDB.update(result['_id'],'Completed',str(doc_type.get("predicted_type")),str(doc_type.get("predicted_score")))
         print("pre process time",time.time()-st)
         #mongoDB.update(id,'Validation1','Ready',doc_type.copy()["predicted_type"])
         del doc_type

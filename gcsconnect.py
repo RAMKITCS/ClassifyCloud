@@ -170,7 +170,7 @@ def convert_pdf_to_image_split(data):
             #page_byte=io.BytesIO()
             print(page)
             #pix=pg.get_pixmap()
-            page_byte=images[page].get_pixmap().tobytes(output="jpg")
+            page_byte=images[page].get_pixmap(colorspace="gray").tobytes(output="jpg")
             write_file(savepath+filename.split('/')[-1]+f'__{page}.jpg',page_byte)
             print(parent)
             parent.send(savepath+filename.split('/')[-1]+f'__{page}.jpg')

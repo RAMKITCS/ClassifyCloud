@@ -58,7 +58,7 @@ def Predict(data):
         pred_value=model.predict(df_vect)
         print("predicted label",pred_value[0])
         doc_type["predicted_type"]=str(pred_value[0])
-        doc_type["predicted_score"]=str(model.predict_proba(df_vect).max())
+        doc_type["predicted_score"]=str(model.predict_proba(df_vect).max()*100)
         del pred_value,df_vect
     except Exception as e:
         print("classification error",str(e))
