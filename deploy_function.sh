@@ -12,7 +12,7 @@ gcloud functions deploy classification-trigger \
 --trigger-event-filters="type=google.cloud.storage.object.v1.finalized" \
 --trigger-event-filters="bucket=noted-cortex-358103_research3" \
 --trigger-location="us" \
---memory=4096 \
+--memory=2048 \
 --timeout=540 \
 --max-instances=100 \
 --env-vars-file .env.yaml

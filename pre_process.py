@@ -58,7 +58,7 @@ def preprocess(path):
             doc_type=multiprocessing.Manager().dict()
             p3=Process(target=classification_test.Predict,args={(path.rstrip('.pdf')+"/main_ocr.txt",doc_type)})
             p3.start()
-            p3.join(200)
+            p3.join(100)
             if p3.is_alive():
                 flag=False
                 print("Classification Thread Alive")
