@@ -14,5 +14,5 @@ gcloud functions deploy classification-trigger \
 --trigger-location="us" \
 --memory=2048 \
 --timeout=540 \
---max-instances=100 \
+--max-instances=10 \
 --env-vars-file .env.yaml
