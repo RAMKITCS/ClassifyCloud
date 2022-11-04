@@ -23,10 +23,11 @@ from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer,Tfi
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score,precision_score,recall_score
 import joblib
+stopwords=stopwords.words('english')
 def clean(text):
     word_lem=WordNetLemmatizer()
     tokens=word_tokenize(text)
-    lower=[word.lower() for word in tokens if len(word)>2 and word.isalpha()]
+    lower=[word.lower() for word in tokens if len(word)>2 and word.isalpha() and word not in stopwords]
     lemmatized_text=[word_lem.lemmatize(word) for word in lower]
     return lemmatized_text
 def vectorize(data,tfidf_vect_fit):
