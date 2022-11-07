@@ -4,6 +4,7 @@ from google.cloud import storage
 #os.environ['GOOGLE_APPLICATION_CREDENTIALS']=os.environ['gcp']
 if 'gcp' in os.environ and os.environ['gcp'] is not None:
     os.environ['GOOGLE_APPLICATION_CREDENTIALS']=os.environ['gcp']
+
 storage_client = storage.Client()
 bucket_name=os.environ['bucket_name']
 bucket = storage_client.bucket(bucket_name)
@@ -173,6 +174,7 @@ def convert_pdf_to_image_split(data):
             page_byte=images[page].get_pixmap(colorspace="gray").tobytes(output="jpg")
             write_file(savepath+filename.split('/')[-1]+f'__{page}.jpg',page_byte)
             print(parent)
+            redact_image("steam-collector-367308",savepath+filename.split('/')[-1]+f'__{page}.jpg',savepath+filename.split('/')[-1]+f'__{page}.jpg',[])
             parent.send(savepath+filename.split('/')[-1]+f'__{page}.jpg')
             pageinfo[page]=savepath+filename.split('/')[-1]+f'__{page}.jpg'
             del page_byte
@@ -186,3 +188,128 @@ def convert_pdf_to_image_split(data):
 
 
 #pageinfo=convert_pdf_to_image_split('Contract/Residential-Lease-Agreement-4/','Contract/Residential-Lease-Agreement-4.pdf')
+import mimetypes
+
+
+
+def redact_image(
+    project,
+    filename,
+    output_filename,
+    info_types,
+    min_likelihood=None,
+    mime_type=None,
+    custom_dictionaries=None,
+    custom_regexes=None
+    
+):
+    """Uses the Data Loss Prevention API to redact protected data in an image.
+    Args:
+        project: The Google Cloud project id to use as a parent resource.
+        filename: The path to the file to inspect.
+        output_filename: The path to which the redacted image will be written.
+        info_types: A list of strings representing info types to look for.
+            A full list of info type categories can be fetched from the API.
+        min_likelihood: A string representing the minimum likelihood threshold
+            that constitutes a match. One of: 'LIKELIHOOD_UNSPECIFIED',
+            'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE', 'LIKELY', 'VERY_LIKELY'.
+        mime_type: The MIME type of the file. If not specified, the type is
+            inferred via the Python standard library's mimetypes module.
+    Returns:
+        None; the response from the API is printed to the terminal.
+    """
+    inp_file=read_file_io(filename).read()
+    # Import the client library
+    import google.cloud.dlp
+
+    # Instantiate a client.
+    dlp = google.cloud.dlp_v2.DlpServiceClient()
+
+    # Prepare info_types by converting the list of strings into a list of
+    # dictionaries (protos are also accepted).
+    info_types = [{"name": info_type} for info_type in info_types]
+
+    # Prepare image_redaction_configs, a list of dictionaries. Each dictionary
+    # contains an info_type and optionally the color used for the replacement.
+    # The color is omitted in this sample, so the default (black) will be used.
+    image_redaction_configs = []
+
+    if info_types is not None:
+        for info_type in info_types:
+            image_redaction_configs.append({"info_type": info_type})
+
+    # Construct the configuration dictionary. Keys which are None may
+    # optionally be omitted entirely.
+    if custom_dictionaries is None:
+        custom_dictionaries = []
+    dictionaries = [
+        {
+            "info_type": {"name": "CUSTOM_DICTIONARY_{}".format(i)},
+            "dictionary": {"word_list": {"words": custom_dict.split(",")}},
+        }
+        for i, custom_dict in enumerate(custom_dictionaries)
+    ]
+    if custom_regexes is None:
+        custom_regexes = []
+    regexes = [
+        {
+            "info_type": {"name": "CUSTOM_REGEX_{}".format(i)},
+            "regex": {"pattern": custom_regex},
+        }
+        for i, custom_regex in enumerate(custom_regexes)
+    ]
+    custom_info_types = dictionaries + regexes
+    print(custom_info_types)
+    # Construct the configuration dictionary. Keys which are None may
+    # optionally be omitted entirely.
+    inspect_config = {
+        "info_types": info_types,
+        "custom_info_types": custom_info_types,
+        "min_likelihood": min_likelihood
+    }
+#     inspect_config = {
+#         "min_likelihood": min_likelihood,
+#         "info_types": info_types,
+#     }
+
+    # If mime_type is not specified, guess it from the filename.
+    if mime_type is None:
+        mime_guess = mimetypes.MimeTypes().guess_type(filename)
+        mime_type = mime_guess[0] or "application/octet-stream"
+
+    # Select the content type index from the list of supported types.
+    supported_content_types = {
+        None: 0,  # "Unspecified"
+        "image/jpeg": 1,
+        "image/bmp": 2,
+        "image/png": 3,
+        "image/svg": 4,
+        "text/plain": 5,
+    }
+    content_type_index = supported_content_types.get(mime_type, 0)
+
+    # Construct the byte_item, containing the file's byte data.
+    
+    byte_item = {"type_": content_type_index, "data": inp_file}
+
+    # Convert the project id into a full resource id.
+    parent = f"projects/{project}"
+
+    # Call the API.
+    response = dlp.redact_image(
+        request={
+            "parent": parent,
+            "inspect_config": inspect_config,
+            "image_redaction_configs": image_redaction_configs,
+            "byte_item": byte_item,
+        }
+    )
+
+    # Write out the results.
+    print(type(output_filename))
+    write_file(output_filename,response.redacted_image)
+    print(
+        "Wrote {byte_count} to {filename}".format(
+            byte_count=len(response.redacted_image), filename=output_filename
+        )
+    )
